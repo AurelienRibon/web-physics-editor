@@ -1,3 +1,5 @@
+"use strict;"
+
 Canvas.BackStyle = {
     fill: '#DDF'
 };
