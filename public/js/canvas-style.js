@@ -1,21 +1,28 @@
 "use strict;"
 
 Canvas.BackStyle = {
-    fill: '#DDF'
+    fill: '#FFF'
 };
 
 Canvas.PointStyle = {
     radius: 7,
-    fill: '#69F',
     stroke: 'black',
-    strokeWidth: 2
+    strokeWidth: 2,
+    fill: '#69F'
 };
 
 Canvas.PointOverStyle = {
-    fill: 'red'
+    fill: '#F00'
 };
 
 Canvas.LineStyle = {
     stroke: 'red',
     strokeWidth: 2
+};
+
+Canvas.CircleStyle = {
+    fill: '#69F',
+    stroke: 'black',
+    strokeWidth: 2,
+    opacity: 0.5
 };
