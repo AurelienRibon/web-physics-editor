@@ -1,0 +1,14 @@
+body {
+    padding: 20px 0;
+}
+
+.canvas {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    height: 350px;
+    margin-left: 68px;
+}
+
+.toolbar {
+    float: left;
+}

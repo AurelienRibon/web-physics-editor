@@ -1,7 +1,14 @@
 "use strict;"
 
 Canvas.BackStyle = {
-    fill: '#FFF'
+    opacity: 0
+};
+
+Canvas.SelectionRectStyle = {
+    fill: '#DDD',
+    stroke: 'black',
+    strokeWidth: 2,
+    opacity: 0.5
 };
 
 Canvas.PointStyle = {
@@ -13,6 +20,10 @@ Canvas.PointStyle = {
 
 Canvas.PointOverStyle = {
     fill: '#F00'
+};
+
+Canvas.PointSelectedStyle = {
+    fill: '#0F0'
 };
 
 Canvas.LineStyle = {

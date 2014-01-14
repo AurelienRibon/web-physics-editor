@@ -17,10 +17,29 @@
 </head>
 
 <body ng-controller="Controller">
-    <div id="canvas"></div>
-    <script>
-        var canvas = new Canvas(600, 400);
-    </script>
+    <div class="container">
+        <div class="toolbar btn-group-vertical" data-toggle="buttons">
+            <label class="btn btn-default active" ng-click="canvas.changeMode('createpolygon')">
+                <input type="radio"><img src="imgs/ic_createpolygon.png">
+            </label>
+            <label class="btn btn-default" ng-click="canvas.changeMode('createcircle')">
+                <input type="radio"><img src="imgs/ic_createcircle.png">
+            </label>
+            <label class="btn btn-default" ng-click="canvas.changeMode('edit')">
+                <input type="radio"><img src="imgs/ic_edit.png">
+            </label>
+            <label class="btn btn-default" ng-click="canvas.delete()">
+                <input type="radio"><img src="imgs/ic_delete.png">
+            </label>
+            <label class="btn btn-default" ng-click="canvas.valign()">
+                <input type="radio"><img src="imgs/ic_align_vertical.png">
+            </label>
+            <label class="btn btn-default" ng-click="canvas.halign()">
+                <input type="radio"><img src="imgs/ic_align_horizontal.png">
+            </label>
+        </div>
+        <div class="canvas" is-canvas></div>
+    </div>
 </body>
 
 </html>
