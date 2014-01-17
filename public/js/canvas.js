@@ -1,5 +1,11 @@
 "use strict;"
 
+function log(str) {
+    if (console && console.log) {
+        console.log(str);
+    }
+}
+
 // -----------------------------------------------------------------------------
 // CONSTRUCTOR
 // -----------------------------------------------------------------------------
@@ -8,7 +14,7 @@ var Canvas = function(w, h) {
     var that = this;
 
     // Define general properties
-    this.mode = 'createpolygon';
+    this.mode = 'edit';
     this.shapes = [];
     this.shape = null;
     this.selectionRect = null;
@@ -30,31 +36,25 @@ var Canvas = function(w, h) {
     this.stage.add(this.pointsLayer);
     this.stage.add(this.frontLayer);
 
+    // Register mousedown event on back layer instead of stage, so clicks
+    // won't interfere with event listeners registered on individual nodes.
     this.backLayer.on('mousedown', function(e) {
-        if (that.mode == 'createpolygon') {
-            that.addPolygonPoint(e.offsetX, e.offsetY);
-        }
-
-        if (that.mode == 'createcircle') {
-            that.addCirclePoint(e.offsetX, e.offsetY);
-        }
-
-        if (that.mode == 'edit') {
-            that.endSelection();
-            that.selectionRect = new Kinetic.Rect(Canvas.SelectionRectStyle);
-            that.selectionRect.position({x: e.offsetX, y: e.offsetY});
-            that.selectionRect.listening(false);
-            that.frontLayer.add(that.selectionRect);
-            that.frontLayer.draw();
-        }
+        if (that.mode == 'createpolygon') that.startPolygonShape(e.offsetX, e.offsetY);
+        if (that.mode == 'createcircle') that.startCircleShape(e.offsetX, e.offsetY);
+        if (that.mode == 'edit') that.startSelection(e.offsetX, e.offsetY);
     });
 
+    // Register mousemove event directly on stage, so we are always notified 
+    // of a move, no matter what. This notification is used to update the
+    // drawings.
     this.stage.on('mousemove', function(e) {
         if (that.mode == 'createpolygon') that.updatePolygonShape(e.offsetX, e.offsetY);
-        if (that.mode == 'edit') that.updateSelectionRect(e.offsetX, e.offsetY);
         if (that.mode == 'createcircle') that.updateCircleShape(e.offsetX, e.offsetY);
+        if (that.mode == 'edit') that.updateSelectionRect(e.offsetX, e.offsetY);
     });
 
+    // Register mouseup event on stage too, since we cannot miss such event,
+    // else the selection rectangle will never be removed for example.
     this.stage.on('mouseup', function(e) {
         if (that.mode == 'edit' && that.selectionRect) {
             that.updateSelectionRect(e.offsetX, e.offsetY);
@@ -64,29 +64,10 @@ var Canvas = function(w, h) {
 };
 
 // -----------------------------------------------------------------------------
-// API for shape management
+// API for circle shapes
 // -----------------------------------------------------------------------------
 
-Canvas.prototype.addPolygonPoint = function(x, y) {
-    var that = this;
-
-    // Create shape if needed.
-    if (this.shape == null) {
-        this.shape = {type: 'polygon', points: []};
-    }
-
-    // Update last line to end at new point.
-    if (this.shape.points.length > 0) {
-        var lastPoint = _.last(this.shape.points);
-        this.updateLine(lastPoint, x, y);
-        this.linesLayer.draw();
-    }
-
-    // Create new point with a line that will follow the mouse.
-    this.createPolygonPoint(x, y);
-};
-
-Canvas.prototype.addCirclePoint = function(x, y) {
+Canvas.prototype.startCircleShape = function(x, y) {
     var that = this;
 
     if (this.shape == null) {
@@ -104,116 +85,8 @@ Canvas.prototype.addCirclePoint = function(x, y) {
         this.updateCircleShape(x, y);
         that.shapes.push(that.shape);
         this.shape = null;
+        this.mode = 'edit';
     }
-};
-
-Canvas.prototype.createPolygonPoint = function(x, y) {
-    var line = this.createPolygonLine(x, y);
-
-    var point = new Kinetic.Circle(Canvas.PointStyle);
-    point.position({x: x, y: y});
-    point.draggable(true);
-    point.prevNode = _.last(this.shape.points);
-    point.nextNode = null;
-    point.prevLine = null;
-    point.nextLine = line;
-
-    if (point.prevNode) {
-        point.prevNode.nextNode = point;
-        point.prevLine = point.prevNode.nextLine;
-    }
-
-    this.shape.points.push(point);
-    this.pointsLayer.add(point);
-    this.animateScaleIn(point);
-
-    this.registerPolygonPointEvents(point);
-    if (!point.prevNode) this.registerFirstPolygonPointEvents(point);
-
-    return point;
-};
-
-Canvas.prototype.createPolygonLine = function(x, y) {
-    var line = new Kinetic.Line(Canvas.LineStyle);
-    line.points([x, y, x, y]);
-    line.listening(false);
-
-    this.linesLayer.add(line);
-    this.animateFadeIn(line);
-
-    return line;
-};
-
-Canvas.prototype.registerPolygonPointEvents = function(point) {
-    var that = this;
-    var lastX, lastY;
-
-    point.on('dragstart', function(e) {
-        lastX = e.offsetX;
-        lastY = e.offsetY;
-
-        if (!_(that.selectedPoints).contains(point)) {
-            that.endSelection();
-        }
-    });
-
-    point.on('dragmove', function(e) {
-        _(that.selectedPoints).forEach(function(p) {
-            if (p != point) that.updatePoint(p, {
-                dx: e.offsetX - lastX, 
-                dy: e.offsetY - lastY
-            });
-        });
-
-        that.updatePoint(point);
-        that.pointsLayer.draw();
-        that.linesLayer.draw();
-
-        lastX = e.offsetX;
-        lastY = e.offsetY;
-    });
-};
-
-Canvas.prototype.registerFirstPolygonPointEvents = function(point) {
-    var that = this;
-
-    point.on('click', function(e) {
-        if (that.shape.points.length < 3) return;
-
-        var lastPoint = _.last(that.shape.points);
-        point.prevNode = lastPoint;
-        point.prevLine = lastPoint.nextLine;
-        lastPoint.nextNode = point;
-        that.updateLine(lastPoint);
-        that.linesLayer.draw();
-
-        point.fire('mouseleave');
-        point.off('click mouseenter mouseleave');
-        that.shapes.push(that.shape);
-        that.shape = null;
-    });
-
-    point.on('mouseenter', function(e) {
-        if (that.shape.points.length < 3) return;
-
-        point.setAttrs(Canvas.PointOverStyle);
-        that.pointsLayer.draw();
-    });
-
-    point.on('mouseleave', function(e) {
-        point.setAttrs(Canvas.PointStyle);
-        that.pointsLayer.draw();
-    });
-};
-
-Canvas.prototype.updatePolygonShape = function(x, y) {
-    if (!this.shape) return;
-
-    var point = _.last(this.shape.points);
-    if (!point) return;
-
-    this.updateLine(point, x, y);
-    this.linesLayer.draw();
 };
 
 Canvas.prototype.updateCircleShape = function(x, y) {
@@ -223,6 +96,19 @@ Canvas.prototype.updateCircleShape = function(x, y) {
     var dy = Math.abs(this.shape.circle.position().y - y);
     this.shape.circle.radius(Math.sqrt(dx*dx + dy*dy));
     this.pointsLayer.draw();
+};
+
+// -----------------------------------------------------------------------------
+// API for selection
+// -----------------------------------------------------------------------------
+
+Canvas.prototype.startSelection = function(x, y) {
+    this.endSelection();
+    this.selectionRect = new Kinetic.Rect(Canvas.SelectionRectStyle);
+    this.selectionRect.position({x: x, y: y});
+    this.selectionRect.listening(false);
+    this.frontLayer.add(this.selectionRect);
+    this.frontLayer.draw();
 };
 
 Canvas.prototype.updateSelectionRect = function(x, y) {
@@ -269,20 +155,20 @@ Canvas.prototype.endSelection = function() {
 // -----------------------------------------------------------------------------
 
 Canvas.prototype.changeMode = function(mode) {
-    this.mode = mode;
-    this.removeLastShape();
-    this.endSelection();
+    if (!this.shape) {
+        this.mode = mode;
+    }
 };
 
 Canvas.prototype.delete = function() {
-    _(this.selectedPoints).forEach(function(p) {
-        if (p.prevNode) p.prevNode.nextNode = null;
-        if (p.prevNode) p.prevNode.nextLine = null;
-        if (p.nextNode) p.nextNode.prevNode = null;
-        if (p.nextNode) p.nextNode.prevLine = null;
-        if (p.prevLine) p.prevLine.remove();
-        if (p.nextLine) p.nextLine.remove();
-        p.remove();
+    var that = this;
+
+    _(this.selectedPoints).forEachRight(function(p) {
+        that.clearPolygonPoint(p);
+    });
+
+    _(this.shapes).forEach(function(shape) {
+        that.linkPolygonShape(shape);
     });
 
     this.selectedPoints = [];
@@ -297,7 +183,7 @@ Canvas.prototype.valign = function() {
     var x = this.selectedPoints[0].position().x;
 
     _(this.selectedPoints).forEach(function(p) {
-        that.updatePoint(p, {x: x});
+        that.updatePolygonPoint(p, {x: x});
     });
 
     this.pointsLayer.draw();
@@ -311,7 +197,7 @@ Canvas.prototype.halign = function() {
     var y = this.selectedPoints[0].position().y;
 
     _(this.selectedPoints).forEach(function(p) {
-        that.updatePoint(p, {y: y});
+        that.updatePolygonPoint(p, {y: y});
     });
 
     this.pointsLayer.draw();
@@ -321,21 +207,6 @@ Canvas.prototype.halign = function() {
 // -----------------------------------------------------------------------------
 // HELPERS
 // -----------------------------------------------------------------------------
-
-Canvas.prototype.updatePoint = function(point, attrs) {
-    if (attrs && attrs.x) point.position({x: attrs.x, y: point.position().y});
-    if (attrs && attrs.y) point.position({x: point.position().x, y: attrs.y});
-    if (attrs && attrs.dx) point.position({x: point.position().x + attrs.dx, y: point.position().y});
-    if (attrs && attrs.dy) point.position({x: point.position().x, y: point.position().y + attrs.dy});
-    if (point.prevNode) this.updateLine(point.prevNode);
-    if (point.nextNode) this.updateLine(point);
-};
-
-Canvas.prototype.updateLine = function(point, x, y) {
-    var pos1 = point.position();
-    var pos2 = y ? {x: x, y: y} : point.nextNode.position();
-    point.nextLine.points([pos1.x, pos1.y, pos2.x, pos2.y]);
-};
 
 Canvas.prototype.removeLastShape = function() {
     if (!this.shape) return;

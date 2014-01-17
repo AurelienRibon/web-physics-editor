@@ -5,10 +5,10 @@ Canvas.BackStyle = {
 };
 
 Canvas.SelectionRectStyle = {
-    fill: '#DDD',
-    stroke: 'black',
-    strokeWidth: 2,
-    opacity: 0.5
+    fill: '#DDF',
+    stroke: '#558',
+    strokeWidth: 0.3,
+    opacity: 0.7
 };
 
 Canvas.PointStyle = {

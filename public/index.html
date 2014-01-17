@@ -12,6 +12,7 @@
     <script type="text/javascript" src="js/libs/kinetic.min.js"></script>
     <script type="text/javascript" src="js/app.js"></script>
     <script type="text/javascript" src="js/canvas.js"></script>
+    <script type="text/javascript" src="js/canvas-polygon.js"></script>
     <script type="text/javascript" src="js/canvas-style.js"></script>
     <script type="text/javascript" src="js/models.js"></script>
 </head>
@@ -19,19 +20,7 @@
 <body ng-controller="Controller">
     <div class="container">
         <div class="btn-toolbar" role="toolbar">
-            <div class="btn-group" data-toggle="buttons">
-                <label class="btn btn-default active" ng-click="canvas.changeMode('createpolygon')">
-                    <input type="radio"><img src="imgs/ic_createpolygon.png">
-                </label>
-                <label class="btn btn-default" ng-click="canvas.changeMode('createcircle')">
-                    <input type="radio"><img src="imgs/ic_createcircle.png">
-                </label>
-                <label class="btn btn-default" ng-click="canvas.changeMode('edit')">
-                    <input type="radio"><img src="imgs/ic_edit.png">
-                </label>
-            </div>
             <div class="btn-group">
-                <button class="btn btn-default" ng-click="canvas.delete()"><img src="imgs/ic_delete.png"></button>
                 <button class="btn btn-default" ng-click="canvas.valign()"><img src="imgs/ic_align_vertical.png"></button>
                 <button class="btn btn-default" ng-click="canvas.halign()"><img src="imgs/ic_align_horizontal.png"></button>
             </div>
