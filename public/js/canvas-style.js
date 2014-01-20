@@ -1,14 +1,12 @@
-"use strict;"
+'use strict';
 
 Canvas.BackStyle = {
     opacity: 0
 };
 
 Canvas.SelectionRectStyle = {
-    fill: '#DDF',
-    stroke: '#558',
-    strokeWidth: 0.3,
-    opacity: 0.7
+    fill: '#888',
+    opacity: 0.5
 };
 
 Canvas.PointStyle = {

@@ -1,10 +1,80 @@
-body {
-    padding: 20px 0;
+html, body {
+    height: 100%;
+}
+
+#page {
+    min-height: 100%;
+    height: auto;
+    margin: 0 auto -100px;
+    padding: 0 0 100px;
+    background: #343434;
+    color: #FFF;
+}
+
+#footer {
+    height: 100px;
+    background: #e84c3d;
+    padding-top: 25px;
+    color: #FFF;
+}
+
+#header {
+    border-top: 10px #e84c3d solid;
+    padding: 10px 0px;
+    background: #FFF;
+}
+
+#header > .container {    
+    position: relative;
+}
+
+#header .logo {
+    padding-top: 20px;
+    padding-bottom: 15px;
+}
+
+#subheader {
+    text-align: center;
+    font-weight: bold;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background: #555;
+}
+
+#content {
+    padding-top: 25px;
+    padding-bottom: 25px;
 }
 
 .canvas {
     border: 1px solid #ccc;
     border-radius: 4px;
-    height: 350px;
+    height: 600px;
     margin-top: 10px;
+    background: #FFF;
+}
+
+.version {
+    color: rgb(163, 163, 163);
+    font-size: 1.5em;
+    position: absolute;
+    right: 15px;
+    bottom: 20px;
+}
+
+.toolbar-header {
+    background: #e84c3d;
+    display: inline-block;
+    vertical-align: top;
+    height: 46px;
+    border-radius: 4px;
+    padding: 0 10px;
+    line-height: 46px;
+    margin-left: 60px;
+    font-weight: bold;
+    text-shadow: 0 1px 4px #000;
+}
+
+.toolbar-header.first {
+    margin-left: 0;
 }

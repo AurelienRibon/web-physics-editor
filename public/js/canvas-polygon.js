@@ -1,4 +1,4 @@
-"use strict;"
+'use strict';
 
 // -----------------------------------------------------------------------------
 // CREATION
@@ -16,7 +16,7 @@ Canvas.prototype.startPolygonShape = function(x, y) {
     if (this.shape.points.length > 0) {
         var lastPoint = _.last(this.shape.points);
         this.updatePolygonLine(lastPoint, x, y);
-        this.linesLayer.draw();
+        this.draw();
     }
 
     // Create new point with a line that will follow the mouse.
@@ -41,7 +41,7 @@ Canvas.prototype.createPolygonPoint = function(x, y) {
     }
 
     this.shape.points.push(point);
-    this.pointsLayer.add(point);
+    this.layer.add(point);
     this.animateScaleIn(point);
 
     this.registerPolygonPointEvents(point);
@@ -55,7 +55,7 @@ Canvas.prototype.createPolygonLine = function(x, y) {
     line.points([x, y, x, y]);
     line.listening(false);
 
-    this.linesLayer.add(line);
+    this.layer.add(line);
     this.animateFadeIn(line);
 
     return line;
@@ -83,8 +83,7 @@ Canvas.prototype.registerPolygonPointEvents = function(point) {
         });
 
         that.movePolygonPoint(point);
-        that.pointsLayer.draw();
-        that.linesLayer.draw();
+        that.draw();
 
         lastX = e.offsetX;
         lastY = e.offsetY;
@@ -102,7 +101,7 @@ Canvas.prototype.registerFirstPolygonPointEvents = function(point) {
         point.prevLine = lastPoint.nextLine;
         lastPoint.nextNode = point;
         that.updatePolygonLine(lastPoint);
-        that.linesLayer.draw();
+        that.draw();
 
         point.fire('mouseleave');
         point.off('click mouseenter mouseleave');
@@ -115,12 +114,12 @@ Canvas.prototype.registerFirstPolygonPointEvents = function(point) {
         if (that.shape.points.length < 3) return;
 
         point.setAttrs(Canvas.PointOverStyle);
-        that.pointsLayer.draw();
+        that.draw();
     });
 
     point.on('mouseleave', function(e) {
         point.setAttrs(Canvas.PointStyle);
-        that.pointsLayer.draw();
+        that.draw();
     });
 };
 
@@ -135,7 +134,7 @@ Canvas.prototype.updatePolygonShape = function(x, y) {
     if (!point) return;
 
     this.updatePolygonLine(point, x, y);
-    this.linesLayer.draw();
+    this.draw();
 };
 
 Canvas.prototype.updatePolygonLine = function(point, x, y) {

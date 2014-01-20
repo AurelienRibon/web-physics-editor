@@ -1,4 +1,4 @@
-"use strict;"
+'use strict';
 
 function log(str) {
     if (console && console.log) {
@@ -22,23 +22,16 @@ var Canvas = function(w, h) {
 
     // Define stage properties
     this.stage = new Kinetic.Stage({container: 'canvas', width: w, height: h});
-    this.backLayer = new Kinetic.Layer();
-    this.linesLayer = new Kinetic.Layer();
-    this.pointsLayer = new Kinetic.Layer();
-    this.frontLayer = new Kinetic.Layer();
+    this.layer = new Kinetic.Layer();
 
     // Add background for event interception
-    this.backLayer.add(new Kinetic.Rect( _.merge({width: w, height: h}, Canvas.BackStyle)));
+    this.back = new Kinetic.Rect( _.merge({width: w, height: h}, Canvas.BackStyle));
+    this.layer.add(this.back);
+    this.stage.add(this.layer);
 
-    // Add layers to stage
-    this.stage.add(this.backLayer);
-    this.stage.add(this.linesLayer);
-    this.stage.add(this.pointsLayer);
-    this.stage.add(this.frontLayer);
-
-    // Register mousedown event on back layer instead of stage, so clicks
+    // Register mousedown event on background instead of stage, so clicks
     // won't interfere with event listeners registered on individual nodes.
-    this.backLayer.on('mousedown', function(e) {
+    this.back.on('mousedown', function(e) {
         if (that.mode == 'createpolygon') that.startPolygonShape(e.offsetX, e.offsetY);
         if (that.mode == 'createcircle') that.startCircleShape(e.offsetX, e.offsetY);
         if (that.mode == 'edit') that.startSelection(e.offsetX, e.offsetY);
@@ -64,41 +57,6 @@ var Canvas = function(w, h) {
 };
 
 // -----------------------------------------------------------------------------
-// API for circle shapes
-// -----------------------------------------------------------------------------
-
-Canvas.prototype.startCircleShape = function(x, y) {
-    var that = this;
-
-    if (this.shape == null) {
-        this.shape = {type: 'circle', circle: null};
-
-        var circle = new Kinetic.Circle(Canvas.CircleStyle);
-        circle.position({x: x, y: y});
-        circle.listening(false);
-
-        this.shape.circle = circle;
-        this.pointsLayer.add(circle);
-        this.pointsLayer.draw();
-
-    } else {
-        this.updateCircleShape(x, y);
-        that.shapes.push(that.shape);
-        this.shape = null;
-        this.mode = 'edit';
-    }
-};
-
-Canvas.prototype.updateCircleShape = function(x, y) {
-    if (!this.shape) return;
-
-    var dx = Math.abs(this.shape.circle.position().x - x);
-    var dy = Math.abs(this.shape.circle.position().y - y);
-    this.shape.circle.radius(Math.sqrt(dx*dx + dy*dy));
-    this.pointsLayer.draw();
-};
-
-// -----------------------------------------------------------------------------
 // API for selection
 // -----------------------------------------------------------------------------
 
@@ -107,8 +65,8 @@ Canvas.prototype.startSelection = function(x, y) {
     this.selectionRect = new Kinetic.Rect(Canvas.SelectionRectStyle);
     this.selectionRect.position({x: x, y: y});
     this.selectionRect.listening(false);
-    this.frontLayer.add(this.selectionRect);
-    this.frontLayer.draw();
+    this.layer.add(this.selectionRect);
+    this.draw();
 };
 
 Canvas.prototype.updateSelectionRect = function(x, y) {
@@ -116,7 +74,7 @@ Canvas.prototype.updateSelectionRect = function(x, y) {
 
     this.selectionRect.width(x - this.selectionRect.position().x);
     this.selectionRect.height(y - this.selectionRect.position().y);
-    this.frontLayer.draw();
+    this.draw();
 };
 
 Canvas.prototype.endSelection = function() {
@@ -146,8 +104,7 @@ Canvas.prototype.endSelection = function() {
 
     this.selectionRect.remove();
     this.selectionRect = null;
-    this.frontLayer.draw();
-    this.pointsLayer.draw();
+    this.draw();
 };
 
 // -----------------------------------------------------------------------------
@@ -155,9 +112,9 @@ Canvas.prototype.endSelection = function() {
 // -----------------------------------------------------------------------------
 
 Canvas.prototype.changeMode = function(mode) {
-    if (!this.shape) {
-        this.mode = mode;
-    }
+    this.endSelection();
+    this.cancelCurrentShape();
+    this.mode = mode;
 };
 
 Canvas.prototype.delete = function() {
@@ -172,8 +129,7 @@ Canvas.prototype.delete = function() {
     });
 
     this.selectedPoints = [];
-    this.pointsLayer.draw();
-    this.linesLayer.draw();
+    this.draw();
 };
 
 Canvas.prototype.valign = function() {
@@ -186,8 +142,7 @@ Canvas.prototype.valign = function() {
         that.updatePolygonPoint(p, {x: x});
     });
 
-    this.pointsLayer.draw();
-    this.linesLayer.draw();
+    this.draw();
 };
 
 Canvas.prototype.halign = function() {
@@ -200,15 +155,14 @@ Canvas.prototype.halign = function() {
         that.updatePolygonPoint(p, {y: y});
     });
 
-    this.pointsLayer.draw();
-    this.linesLayer.draw();
+    this.draw();
 };
 
 // -----------------------------------------------------------------------------
 // HELPERS
 // -----------------------------------------------------------------------------
 
-Canvas.prototype.removeLastShape = function() {
+Canvas.prototype.cancelCurrentShape = function() {
     if (!this.shape) return;
 
     if (this.shape.type == 'polygon') {
@@ -224,8 +178,7 @@ Canvas.prototype.removeLastShape = function() {
     }
 
     this.shape = null;
-    this.pointsLayer.draw();
-    this.linesLayer.draw();
+    this.draw();
 };
 
 Canvas.prototype.animateScaleIn = function(obj) {
@@ -238,4 +191,8 @@ Canvas.prototype.animateFadeIn = function(obj) {
     obj.setAttrs({opacity: 0});
     var ease = Kinetic.Easings.EaseInOut;
     new Kinetic.Tween({node: obj, duration: 0.5, easing: ease, opacity: 1}).play();
+};
+
+Canvas.prototype.draw = function() {
+    this.layer.draw();
 };
