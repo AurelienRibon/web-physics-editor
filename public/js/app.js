@@ -44,6 +44,18 @@ app.directive('dragListener', function() {
             e.stopPropagation();
             e.preventDefault();
             $('.dropzone').removeClass('shown');
+
+            for (var i=0, f; f=e.dataTransfer.files[i]; i++) {
+                if (!f.type.match('image.*')) continue;
+                var reader = new FileReader();
+                reader.readAsDataURL(f);
+                reader.onloadend = function(e) {
+                    var span = document.createElement('span');
+                    var image = new Image();
+                    image.src = e.target.result;
+                    scope.canvas.setImage(image);
+                };
+            }
         });
     };
 });
