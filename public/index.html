@@ -16,9 +16,12 @@
     <script type="text/javascript" src="js/canvas-circle.js"></script>
     <script type="text/javascript" src="js/canvas-style.js"></script>
     <script type="text/javascript" src="js/models.js"></script>
+    <script type="text/javascript">
+        jQuery.event.props.push('dataTransfer');
+    </script>
 </head>
 
-<body ng-controller="Controller">
+<body ng-controller="Controller" drag-listener>
 
     <div id="page">
         <div id="header">
@@ -48,7 +51,12 @@
                         <button no-focus class="btn btn-default" ng-click="canvas.halign()"><img src="imgs/ic_align_horizontal.png"></button>
                     </div>
                 </div>
-                <div class="canvas" is-canvas></div>
+                <div class="canvas">
+                    <div is-canvas></div>
+                    <div class="dropzone">
+                        <div>Drop your image here</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

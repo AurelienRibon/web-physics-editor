@@ -25,9 +25,32 @@ app.directive('isCanvas', function() {
     };
 });
 
+app.directive('dragListener', function() {
+    return function(scope, elem, attrs) {
+        elem.on('dragover', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            $('.dropzone').addClass('shown');
+        });
+
+        elem.on('dragleave', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            $('.dropzone').removeClass('shown');
+        });
+
+        elem.on('drop', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            $('.dropzone').removeClass('shown');
+        });
+    };
+});
+
 app.directive('noFocus', function() {
     return function(scope, elem, attrs) {
-        elem.on('mouseup', function() {
+        elem.on('mouseup', function(e) {
             this.blur();
         });
     };
