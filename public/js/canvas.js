@@ -1,11 +1,5 @@
 'use strict';
 
-function log(str) {
-    if (console && console.log) {
-        console.log(str);
-    }
-}
-
 // -----------------------------------------------------------------------------
 // CONSTRUCTOR
 // -----------------------------------------------------------------------------
@@ -20,18 +14,32 @@ var Canvas = function(w, h) {
     this.selectionRect = null;
     this.selectedPoints = [];
 
-    // Define stage properties
+    // Define stage, layer and groups
     this.stage = new Kinetic.Stage({container: 'canvas', width: w, height: h});
     this.layer = new Kinetic.Layer();
 
-    // Add background for event interception
-    this.back = new Kinetic.Rect( _.merge({width: w, height: h}, Canvas.BackStyle));
-    this.layer.add(this.back);
-    this.stage.add(this.layer);
+    this.groups = {
+        background: new Kinetic.Group(),
+        image: new Kinetic.Group(),
+        circles: new Kinetic.Group(),
+        innerLines: new Kinetic.Group(),
+        outerLines: new Kinetic.Group(),
+        points: new Kinetic.Group(),
+        foreground: new Kinetic.Group()
+    };
+
+    _(this.groups).forOwn(function(i, k) {
+        that.layer.add(that.groups[k]);
+    });
+
+    // Add image group to background and define a bg rectangle for event
+    // interception.
+    this.groups.background.add(this.groups.image);
+    this.groups.background.add(new Kinetic.Rect( _.merge({width: w, height: h}, Canvas.BackStyle)));
 
     // Register mousedown event on background instead of stage, so clicks
     // won't interfere with event listeners registered on individual nodes.
-    this.back.on('mousedown', function(e) {
+    this.groups.background.on('mousedown', function(e) {
         if (that.mode == 'createpolygon') that.startPolygonShape(e.offsetX, e.offsetY);
         if (that.mode == 'createcircle') that.startCircleShape(e.offsetX, e.offsetY);
         if (that.mode == 'edit') that.startSelection(e.offsetX, e.offsetY);
@@ -54,6 +62,9 @@ var Canvas = function(w, h) {
             that.endSelection();
         }
     });
+
+    // Update all
+    this.stage.add(this.layer);
 };
 
 // -----------------------------------------------------------------------------
@@ -62,7 +73,8 @@ var Canvas = function(w, h) {
 
 Canvas.prototype.setImage = function(src) {
     var image = new Kinetic.Image({image: src, opacity: 0});
-    this.layer.add(image);
+    this.groups.image.destroyChildren();
+    this.groups.image.add(image);
     this.animateFadeIn(image);
     this.draw();
 };
@@ -76,7 +88,7 @@ Canvas.prototype.startSelection = function(x, y) {
     this.selectionRect = new Kinetic.Rect(Canvas.SelectionRectStyle);
     this.selectionRect.position({x: x, y: y});
     this.selectionRect.listening(false);
-    this.layer.add(this.selectionRect);
+    this.groups.foreground.add(this.selectionRect);
     this.draw();
 };
 
@@ -113,7 +125,7 @@ Canvas.prototype.endSelection = function() {
         }
     });
 
-    this.selectionRect.remove();
+    this.selectionRect.destroy();
     this.selectionRect = null;
     this.draw();
 };
@@ -150,7 +162,7 @@ Canvas.prototype.valign = function() {
     var x = this.selectedPoints[0].position().x;
 
     _(this.selectedPoints).forEach(function(p) {
-        that.updatePolygonPoint(p, {x: x});
+        that.movePolygonPoint(p, {x: x});
     });
 
     this.draw();
@@ -163,7 +175,7 @@ Canvas.prototype.halign = function() {
     var y = this.selectedPoints[0].position().y;
 
     _(this.selectedPoints).forEach(function(p) {
-        that.updatePolygonPoint(p, {y: y});
+        that.movePolygonPoint(p, {y: y});
     });
 
     this.draw();
@@ -178,14 +190,14 @@ Canvas.prototype.cancelCurrentShape = function() {
 
     if (this.shape.type == 'polygon') {
         for (var i=0; i<this.shape.points.length; i++) {
-            this.shape.points[i].nextLine.remove();
-            this.shape.points[i].remove();
+            this.shape.points[i].nextLine.destroy();
+            this.shape.points[i].destroy();
         }
     }
 
     if (this.shape.type == 'circle') {
-        this.shape.center.remove();
-        this.shape.circle.remove();
+        this.shape.center.destroy();
+        this.shape.circle.destroy();
     }
 
     this.shape = null;

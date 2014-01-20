@@ -41,7 +41,7 @@ Canvas.prototype.createPolygonPoint = function(x, y) {
     }
 
     this.shape.points.push(point);
-    this.layer.add(point);
+    this.groups.points.add(point);
     this.animateScaleIn(point);
 
     this.registerPolygonPointEvents(point);
@@ -55,7 +55,7 @@ Canvas.prototype.createPolygonLine = function(x, y) {
     line.points([x, y, x, y]);
     line.listening(false);
 
-    this.layer.add(line);
+    this.groups.outerLines.add(line);
     this.animateFadeIn(line);
 
     return line;
@@ -161,10 +161,10 @@ Canvas.prototype.clearPolygonPoint = function(point) {
     if (point.prevNode) point.prevNode.nextLine = null;
     if (point.nextNode) point.nextNode.prevNode = null;
     if (point.nextNode) point.nextNode.prevLine = null;
-    if (point.prevLine) point.prevLine.remove();
-    if (point.nextLine) point.nextLine.remove();
+    if (point.prevLine) point.prevLine.destroy();
+    if (point.nextLine) point.nextLine.destroy();
     _(point.shape.points).remove(point);
-    point.remove();
+    point.destroy();
 };
 
 Canvas.prototype.linkPolygonShape = function(shape) {
@@ -186,8 +186,8 @@ Canvas.prototype.linkPolygonShape = function(shape) {
         var p2 = circularPoints[i+1];
 
         if (p1.nextNode != p2 || p2.prevNode != p1) {
-            if (p1.nextLine) p1.nextLine.remove();
-            if (p2.prevLine) p2.prevLine.remove();
+            if (p1.nextLine) p1.nextLine.destroy();
+            if (p2.prevLine) p2.prevLine.destroy();
 
             p1.nextNode = p2;
             p2.prevNode = p1;

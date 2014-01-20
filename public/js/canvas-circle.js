@@ -15,7 +15,7 @@ Canvas.prototype.startCircleShape = function(x, y) {
         circle.listening(false);
 
         this.shape.circle = circle;
-        this.layer.add(circle);
+        this.groups.circles.add(circle);
         this.draw();
 
     } else {

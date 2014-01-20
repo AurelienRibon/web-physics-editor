@@ -29,7 +29,7 @@ app.directive('isCanvas', function() {
 
         $(window).on('keyup', function(e) {
             var keys = {ESC: 27, E: 69, R: 82, BACK: 8, DEL: 46};
-            
+
             if (e.keyCode == keys.ESC) scope.canvas.changeMode('edit');
             if (e.keyCode == keys.E) scope.canvas.changeMode('createpolygon');
             if (e.keyCode == keys.R) scope.canvas.changeMode('createcircle');
