@@ -2,8 +2,24 @@
 
 var app = angular.module('bodyeditor', []);
 
+// -----------------------------------------------------------------------------
+// CONTROLLERS
+// -----------------------------------------------------------------------------
+
 app.controller('Controller', function($scope) {
     $scope.canvas = null;
+});
+
+// -----------------------------------------------------------------------------
+// DIRECTIVES
+// -----------------------------------------------------------------------------
+
+app.directive('noFocus', function() {
+    return function(scope, elem, attrs) {
+        elem.on('mouseup', function(e) {
+            this.blur();
+        });
+    };
 });
 
 app.directive('isCanvas', function() {
@@ -12,12 +28,13 @@ app.directive('isCanvas', function() {
         scope.canvas = new Canvas(elem.width(), elem.height());
 
         $(window).on('keyup', function(e) {
-            /* E */ if (e.keyCode == 69) scope.canvas.changeMode('edit');
-            /* R */ if (e.keyCode == 82) scope.canvas.changeMode('createpolygon');
-            /* T */ if (e.keyCode == 84) scope.canvas.changeMode('createcircle');
+            var keys = {ESC: 27, E: 69, R: 82, BACK: 8, DEL: 46};
+            
+            if (e.keyCode == keys.ESC) scope.canvas.changeMode('edit');
+            if (e.keyCode == keys.E) scope.canvas.changeMode('createpolygon');
+            if (e.keyCode == keys.R) scope.canvas.changeMode('createcircle');
 
-            // BACK or DEL
-            if (e.keyCode == 8 || e.keyCode == 46) {
+            if (e.keyCode == keys.BACK || e.keyCode == keys.DEL) {
                 e.preventDefault();
                 scope.canvas.delete();
             }
@@ -56,14 +73,6 @@ app.directive('dragListener', function() {
                     scope.canvas.setImage(image);
                 };
             }
-        });
-    };
-});
-
-app.directive('noFocus', function() {
-    return function(scope, elem, attrs) {
-        elem.on('mouseup', function(e) {
-            this.blur();
         });
     };
 });
