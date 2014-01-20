@@ -11,13 +11,13 @@ Canvas.SelectionRectStyle = {
 
 Canvas.PointStyle = {
     radius: 7,
-    stroke: 'black',
+    stroke: '#000',
     strokeWidth: 2,
-    fill: '#69F'
+    fill: '#888'
 };
 
 Canvas.PointOverStyle = {
-    fill: '#F00'
+    fill: '#0C0'
 };
 
 Canvas.PointSelectedStyle = {
@@ -25,13 +25,11 @@ Canvas.PointSelectedStyle = {
 };
 
 Canvas.LineStyle = {
-    stroke: 'red',
+    stroke: '#000',
     strokeWidth: 2
 };
 
 Canvas.CircleStyle = {
-    fill: '#69F',
-    stroke: 'black',
-    strokeWidth: 2,
-    opacity: 0.5
+    stroke: '#000',
+    strokeWidth: 2
 };

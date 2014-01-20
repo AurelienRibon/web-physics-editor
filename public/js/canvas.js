@@ -20,7 +20,7 @@ var Canvas = function(w, h) {
 
     this.groups = {
         background: new Kinetic.Group(),
-        image: new Kinetic.Group(),
+        image: new Kinetic.Group({opacity: 0.3}),
         circles: new Kinetic.Group(),
         innerLines: new Kinetic.Group(),
         outerLines: new Kinetic.Group(),
